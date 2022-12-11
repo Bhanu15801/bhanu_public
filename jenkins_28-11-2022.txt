@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    stages {
+        stage('build') {
+            steps {
+                dir('F:\\Training\\Selenium\\WS_JavaCore\\SeleniumExamples'){
+                    bat 'testNgBatchFile.bat'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'One way or another, Test finished'
+        }
+        success {
+            echo 'Test succeeded!'
+            dir('F:\\Training\\Selenium\\WS_JavaCore\\SeleniumExamples') {
+                testNG reportFilenamePattern: '**/test-output/*.xml'
+            }
+        }
+        unstable {
+            echo 'Test unstable, deleting the'
+            deleteDir() /* clean up our workspace */
+        }
+        failure {
+            echo 'Test failed'
+            mail to: 'team@example.com',
+            subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+            body: "Something is wrong with ${env.BUILD_URL}"
+        }
+        changed {
+            echo 'Things were different before...'
+        }
+    }
+}
